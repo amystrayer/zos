@@ -215,7 +215,7 @@ export default class Dependency {
     name: string,
     network: string,
   ): string {
-    // TODO: Remove legacy project file support
+    // TODO-v3: Remove legacy project file support
     let legacyFilePath = `node_modules/${name}/zos.${network}.json`;
     legacyFilePath = fs.exists(legacyFilePath) ? legacyFilePath : null;
     let filePath = `node_modules/${
