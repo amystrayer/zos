@@ -160,7 +160,7 @@ export default class Dependency {
 
   public getProjectFile(): ProjectFile | never {
     if (!this._projectFile) {
-      // TODO: remove legacy project file support
+      // TODO-v3: remove legacy project file support
       const legacyFilePath = `node_modules/${
         this.name
       }/${LEGACY_PROJECT_FILE_NAME}`;
