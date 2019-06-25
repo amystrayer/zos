@@ -97,29 +97,39 @@ export default class NetworkFile {
   }
 
   // TS-TODO: type for network parameter (and class member too).
-  public constructor(projectFile: ProjectFile, network: any, filePath: string) {
+  public constructor(
+    projectFile: ProjectFile,
+    network: any,
+    filePath: string = null,
+  ) {
     this.projectFile = projectFile;
     this.network = network;
-    this.filePath = filePath;
 
     const defaults = {
       contracts: {},
       solidityLibs: {},
       proxies: {},
       manifestVersion: MANIFEST_VERSION,
-    };
+    } as any;
 
-    try {
-      this.data = fs.parseJsonIfExists(this.filePath) || defaults;
-      // if we failed to read and parse project.json
-    } catch (e) {
-      e.message = `Failed to parse '${path.resolve(
-        filePath,
-      )}' file. Please make sure that ${filePath} is a valid JSON file. Details: ${
-        e.message
-      }.`;
-      throw e;
+    this.filePath = NetworkFile.getExistingFilePath('.', network, filePath);
+
+    if (this.filePath) {
+      try {
+        this.data = fs.parseJsonIfExists(this.filePath);
+      } catch (e) {
+        e.message = `Failed to parse '${path.resolve(
+          filePath,
+        )}' file. Please make sure that ${filePath} is a valid JSON file. Details: ${
+          e.message
+        }.`;
+        throw e;
+      }
     }
+
+    this.data = this.data || defaults;
+    this.filePath = this.filePath || `${OPEN_ZEPPELIN_FOLDER}/${network}.json`;
+
     checkVersion(this.data.manifestVersion, this.filePath);
   }
 
@@ -540,13 +550,18 @@ export default class NetworkFile {
     }
   }
 
-  public static getFilePath(network: string): string {
-    // TODO: Remove legacy project file support
-    let legacyFilePath = `zos.${network}.json`;
-    console.log(legacyFilePath);
-
-    legacyFilePath = fs.exists(legacyFilePath) ? legacyFilePath : null;
-    return legacyFilePath || `${OPEN_ZEPPELIN_FOLDER}/${network}.json`;
+  public static getExistingFilePath(
+    dir: string,
+    network: string,
+    ...paths: string[]
+  ): string {
+    // TODO-v3: remove legacy project file support
+    // Prefer the new format over the old one
+    return [
+      ...paths,
+      `${dir}/zos.${network}.json`,
+      `${dir}/${OPEN_ZEPPELIN_FOLDER}/${network}.json`,
+    ].find(fs.exists);
   }
 
   private hasChanged(): boolean {
