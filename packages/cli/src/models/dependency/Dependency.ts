@@ -222,7 +222,7 @@ export default class Dependency {
       this.name
     }/${OPEN_ZEPPELIN_FOLDER}/${network}.json`;
     filePath = fs.exists(filePath) ? filePath : null;
-    return legacyFilePath || filePath;
+    return filePath || legacyFilePath;
   }
 
   private validateSatisfiesVersion(
